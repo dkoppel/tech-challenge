@@ -31,3 +31,4 @@ https://developer.hashicorp.com/terraform/tutorials/aws/aws-asg
 https://github.com/terraform-aws-modules/terraform-aws-vpc
 https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples/simple-vpc
 https://github.com/terraform-aws-modules/terraform-aws-s3-bucket
+https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id

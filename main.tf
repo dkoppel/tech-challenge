@@ -1,17 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.16"
-    }
-  }
-
-  required_version = ">= 1.2.0"
-}
-
-provider "aws" {
-  region = local.region
-}
 
 locals {
   name   = "poc-${replace(basename(path.cwd), "_", "-")}"
@@ -42,11 +28,16 @@ module "vpc" {
   }
 }
 
+# We need to add a random seed to bucket names to prevent bucket name collisions.
+resource "random_id" "id" {
+  byte_length = 8
+}
+
 module "s3-bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "3.7.0"
 
-  bucket = "${local.name}-bucket"
+  bucket = "${local.name}-bucket-${random_id.id.hex}"
 
   tags = local.tags
 
