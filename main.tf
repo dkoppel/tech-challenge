@@ -3,14 +3,14 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "3.14.0"
 
-  name = local.name
-  cidr = "10.1.0.0/16"
+  name               = local.name
+  cidr               = "10.1.0.0/16"
+  tags               = local.tags
+  enable_nat_gateway = true
 
   azs             = ["${local.region}a", "${local.region}b"]
   private_subnets = ["10.1.2.0/24", "10.1.3.0/24"]
   public_subnets  = ["10.1.0.0/24", "10.1.1.0/24"]
-
-  tags = local.tags
 
   vpc_tags = {
     Name = "${local.name}-vpc"
@@ -93,6 +93,9 @@ resource "aws_lb_target_group" "app_tg" {
   port     = 80
   protocol = "HTTP"
   vpc_id   = module.vpc.vpc_id
+  health_check {
+    matcher = "200,403" #apache default page returns 403 rather than 200.
+  }
 }
 
 #Create an Elastic Load Balancer, listener, and attachment
@@ -115,7 +118,7 @@ resource "aws_lb_listener" "app_listener" {
 }
 resource "aws_autoscaling_attachment" "app_attachment" {
   autoscaling_group_name = aws_autoscaling_group.app_asg.name
-  lb_target_group_arn   = aws_lb_target_group.app_tg.arn
+  lb_target_group_arn    = aws_lb_target_group.app_tg.arn
 }
 
 #Create an EC2 Launch configuration
@@ -135,6 +138,7 @@ resource "aws_launch_configuration" "app_launch_config" {
 
 #Create an auto-scaling group
 resource "aws_autoscaling_group" "app_asg" {
+  name                 = "${local.name}-asg"
   min_size             = 2
   max_size             = 6
   desired_capacity     = 2
@@ -163,7 +167,7 @@ resource "aws_security_group" "app_lb_sg" {
 }
 resource "aws_security_group" "app_instance_sg" {
   name        = "${local.name}-instance-sg"
-  description = "Allow all LB traffic to app instances"
+  description = "Allow LB traffic to app instances"
   vpc_id      = module.vpc.vpc_id
   ingress {
     from_port       = 80
@@ -173,16 +177,15 @@ resource "aws_security_group" "app_instance_sg" {
   }
 
   egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    security_groups = [aws_security_group.app_lb_sg.id]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 resource "aws_security_group" "app_ssh_sg" {
   name        = "${local.name}-standalone-sg"
   description = "Allow inbound SSH access for standalone host"
-  vpc_id      = module.vpc.vpc_id
   ingress {
     from_port   = 22
     to_port     = 22
