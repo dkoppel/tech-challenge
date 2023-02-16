@@ -105,6 +105,9 @@ resource "aws_launch_configuration" "app_launch_config" {
   lifecycle {
     create_before_destroy = true
   }
+  root_block_device {
+    volume_size = 20
+  }
 }
 
 #Create an auto-scaling group
