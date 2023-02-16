@@ -1,2 +1,3 @@
 #!/bin/bash
-true
+dnf install -Y httpd
+systemctl enable --now httpd
