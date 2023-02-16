@@ -20,19 +20,19 @@ In order to access instances, you will need to pre-generate an RSA keypair calle
 Once all prerequisites are met, this configuration can be applied as follows:
 
 ```
-$terraform init
-$terraform apply
+$ terraform init
+$ terraform apply
 ```
 
 ## Sources, references, examples used:
-https://developer.hashicorp.com/tutorials/library?product=terraform
-https://developer.hashicorp.com/terraform/tutorials/aws-get-started/aws-build
-https://developer.hashicorp.com/terraform/tutorials/aws/aws-asg
-https://github.com/terraform-aws-modules/terraform-aws-vpc
-https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples/simple-vpc
-https://github.com/terraform-aws-modules/terraform-aws-s3-bucket
-https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id
-https://registry.terraform.io/providers/hashicorp/aws/latest/docs
-https://registry.terraform.io/namespaces/terraform-aws-modules
-https://stackoverflow.com/questions/51496944/terraform-forces-new-ec2-resource-creation-on-plan-apply-regarding-existing-secu
-https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance.html#security_groups
+* https://developer.hashicorp.com/tutorials/library?product=terraform
+* https://developer.hashicorp.com/terraform/tutorials/aws-get-started/aws-build
+* https://developer.hashicorp.com/terraform/tutorials/aws/aws-asg
+* https://github.com/terraform-aws-modules/terraform-aws-vpc
+* https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples/simple-vpc
+* https://github.com/terraform-aws-modules/terraform-aws-s3-bucket
+* https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id
+* https://registry.terraform.io/providers/hashicorp/aws/latest/docs
+* https://registry.terraform.io/namespaces/terraform-aws-modules
+* https://stackoverflow.com/questions/51496944/terraform-forces-new-ec2-resource-creation-on-plan-apply-regarding-existing-secu
+* https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance.html#security_groups
