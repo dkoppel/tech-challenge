@@ -62,6 +62,16 @@ module "s3-bucket" {
   ]
 }
 
+#Create folder objects
+resource "aws_s3_object" "images" {
+  key    = "Images/"
+  bucket = module.s3-bucket.s3_bucket_id
+}
+resource "aws_s3_object" "logs" {
+  key    = "Logs/"
+  bucket = module.s3-bucket.s3_bucket_id
+}
+
 #Create a stand alone RHEL EC2 instance
 resource "aws_instance" "standalone_server" {
   ami           = local.ami
