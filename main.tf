@@ -1,15 +1,3 @@
-
-locals {
-  name   = "poc-${replace(basename(path.cwd), "_", "-")}"
-  region = "us-east-1"
-
-  tags = {
-    Project    = local.name
-    GithubRepo = "tech-challenge"
-    GithubOrg  = "dkoppel"
-  }
-}
-
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "3.14.0"
