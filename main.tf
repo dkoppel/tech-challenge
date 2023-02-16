@@ -66,7 +66,7 @@ module "s3-bucket" {
       }
 
       expiration = {
-        days                         = 90
+        days = 90
       }
     }
   ]
