@@ -84,7 +84,7 @@ resource "aws_instance" "standalone_server" {
   root_block_device {
     volume_size = 20
   }
-  security_groups = aws_security_group.app_ssh_sg.id
+  security_groups = [aws_security_group.app_ssh_sg.id]
 }
 
 #Create a load balancer target group
@@ -101,7 +101,7 @@ resource "aws_launch_configuration" "app_launch_config" {
   image_id        = local.ami
   instance_type   = "t2.micro"
   user_data       = file("user-data.sh")
-  security_groups = aws_security_group.app_lb_sg.id
+  security_groups = [aws_security_group.app_lb_sg.id]
   lifecycle {
     create_before_destroy = true
   }
