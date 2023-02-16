@@ -1,3 +1,4 @@
+# Initialize a VPC and subnets
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "3.14.0"
@@ -16,11 +17,12 @@ module "vpc" {
   }
 }
 
-# We need to add a random seed to bucket names to prevent bucket name collisions.
+# Create a random id to prevent bucket name collisions.
 resource "random_id" "id" {
   byte_length = 8
 }
 
+# Create a bucket and lifecycle rules
 module "s3-bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
   version = "3.7.0"
@@ -60,8 +62,9 @@ module "s3-bucket" {
   ]
 }
 
+#Create a stand alone RHEL EC2 instance
 resource "aws_instance" "standalone_server" {
-  ami           = "ami-0c9978668f8d55984" # Red Hat Enterprise Linux 9
+  ami           = local.ami
   instance_type = "t2.micro"
   subnet_id     = module.vpc.public_subnets[1]
   key_name      = "access-key" #IMPORTANT: this key needs to be generated manually and securely stored in order to access instance.  See README.md
