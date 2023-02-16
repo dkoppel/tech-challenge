@@ -97,25 +97,25 @@ resource "aws_lb_target_group" "app_tg" {
 
 #Create an Elastic Load Balancer, listener, and TG attachment
 resource "aws_lb" "app_alb" {
-  name = "${local.name}-alb"
-  internal = false
+  name               = "${local.name}-alb"
+  internal           = false
   load_balancer_type = "application"
-  security_groups = [aws_security_group.app_lb_sg.id]
-  subnets = module.vpc.public_subnets
+  security_groups    = [aws_security_group.app_lb_sg.id]
+  subnets            = module.vpc.public_subnets
 }
 resource "aws_lb_listener" "app_listener" {
   load_balancer_arn = aws_lb.app_alb.arn
-  port = "80"
-  protocol = "HTTP"
+  port              = "80"
+  protocol          = "HTTP"
 
   default_action {
-    type = "forward"
+    type             = "forward"
     target_group_arn = aws_lb_target_group.app_tg.arn
   }
 }
 resource "aws_lb_target_group_attachment" "app_attachment" {
   autoscaling_group_name = aws_autoscaling_group.app_asg.name
-  alb_target_group_arn = aws_lb_target_group.app_tg.arn
+  alb_target_group_arn   = aws_lb_target_group.app_tg.arn
 }
 
 #Create an EC2 Launch configuration
@@ -166,16 +166,16 @@ resource "aws_security_group" "app_instance_sg" {
   description = "Allow all LB traffic to app instances"
   vpc_id      = module.vpc.vpc_id
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
     security_groups = [aws_security_group.app_lb_sg.id]
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
     security_groups = [aws_security_group.app_lb_sg.id]
   }
 }
