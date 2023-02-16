@@ -67,7 +67,6 @@ module "s3-bucket" {
 
       expiration = {
         days                         = 90
-        expired_object_delete_marker = true
       }
     }
   ]
