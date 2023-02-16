@@ -115,7 +115,7 @@ resource "aws_lb_listener" "app_listener" {
 }
 resource "aws_autoscaling_attachment" "app_attachment" {
   autoscaling_group_name = aws_autoscaling_group.app_asg.name
-  alb_target_group_arn   = aws_lb_target_group.app_tg.arn
+  lb_target_group_arn   = aws_lb_target_group.app_tg.arn
 }
 
 #Create an EC2 Launch configuration
@@ -162,7 +162,7 @@ resource "aws_security_group" "app_lb_sg" {
   }
 }
 resource "aws_security_group" "app_instance_sg" {
-  name        = "${local.name}-lb-sg"
+  name        = "${local.name}-instance-sg"
   description = "Allow all LB traffic to app instances"
   vpc_id      = module.vpc.vpc_id
   ingress {
