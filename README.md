@@ -1,6 +1,6 @@
-# poc-tech-challenge #
+# tech-challenge #
 
-The purpose of this technical challenge is to demonstrate a working knowledge of Terraform through practical application.  This terraform configuration will provision a simple Proof of Concept infrastructure in the AWS cloud, meeting the following requirements:
+The purpose of this technical challenge is to demonstrate a working knowledge of Terraform through practical application.  This terraform configuration provisions a simple Proof of Concept infrastructure in the AWS cloud, meeting the following requirements:
 
 1. A VPC containing 4 subnets, distributed amongst 2 availability zones, two private and two public.
 2. An Application load balancer (HTTP).
@@ -32,3 +32,5 @@ https://github.com/terraform-aws-modules/terraform-aws-vpc
 https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples/simple-vpc
 https://github.com/terraform-aws-modules/terraform-aws-s3-bucket
 https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id
+https://registry.terraform.io/providers/hashicorp/aws/latest/docs
+https://registry.terraform.io/namespaces/terraform-aws-modules
