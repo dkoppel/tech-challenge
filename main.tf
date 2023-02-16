@@ -95,7 +95,7 @@ resource "aws_lb_target_group" "app_tg" {
   vpc_id   = module.vpc.vpc_id
 }
 
-#Create an Elastic Load Balancer, listener, and TG attachment
+#Create an Elastic Load Balancer, listener, and attachment
 resource "aws_lb" "app_alb" {
   name               = "${local.name}-alb"
   internal           = false
@@ -113,7 +113,7 @@ resource "aws_lb_listener" "app_listener" {
     target_group_arn = aws_lb_target_group.app_tg.arn
   }
 }
-resource "aws_lb_target_group_attachment" "app_attachment" {
+resource "aws_autoscaling_attachment" "app_attachment" {
   autoscaling_group_name = aws_autoscaling_group.app_asg.name
   alb_target_group_arn   = aws_lb_target_group.app_tg.arn
 }
