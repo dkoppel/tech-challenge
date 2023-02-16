@@ -84,6 +84,7 @@ resource "aws_instance" "standalone_server" {
   root_block_device {
     volume_size = 20
   }
+  security_groups = aws_security_group.app_ssh_sg.id
 }
 
 #Create a load balancer target group
@@ -96,11 +97,11 @@ resource "aws_lb_target_group" "app_alb" {
 
 #Create an EC2 Launch configuration
 resource "aws_launch_configuration" "app_launch_config" {
-  name_prefix   = "${local.name}-app-"
-  image_id      = local.ami
-  instance_type = "t2.micro"
-  user_data     = file("user-data.sh")
-  #security_groups = TODO
+  name_prefix     = "${local.name}-app-"
+  image_id        = local.ami
+  instance_type   = "t2.micro"
+  user_data       = file("user-data.sh")
+  security_groups = aws_security_group.app_lb_sg.id
   lifecycle {
     create_before_destroy = true
   }
@@ -113,4 +114,42 @@ resource "aws_autoscaling_group" "app_asg" {
   desired_capacity     = 2
   launch_configuration = aws_launch_configuration.app_launch_config.name
   vpc_zone_identifier  = module.vpc.private_subnets
+}
+
+#Create security groups
+resource "aws_security_group" "app_lb_sg" {
+  name        = "${local.name}-lb-sg"
+  description = "Allow all inbound HTTP traffic to LB"
+  vpc_id      = module.vpc.vpc_id
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+resource "aws_security_group" "app_ssh_sg" {
+  name        = "${local.name}-standalone-sg"
+  description = "Allow inbound SSH access for standalone host"
+  vpc_id      = module.vpc.vpc_id
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
