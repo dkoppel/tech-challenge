@@ -84,5 +84,33 @@ resource "aws_instance" "standalone_server" {
   root_block_device {
     volume_size = 20
   }
+}
 
+#Create a load balancer target group
+resource "aws_lb_target_group" "app_alb" {
+  name     = "${local.name}-alb"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = module.vpc.vpc_id
+}
+
+#Create an EC2 Launch configuration
+resource "aws_launch_configuration" "app_launch_config" {
+  name_prefix   = "${local.name}-app-"
+  image_id      = local.ami
+  instance_type = "t2.micro"
+  user_data     = file("user-data.sh")
+  #security_groups = TODO
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+#Create an auto-scaling group
+resource "aws_autoscaling_group" "app_asg" {
+  min_size             = 2
+  max_size             = 6
+  desired_capacity     = 2
+  launch_configuration = aws_launch_configuration.app_launch_config.name
+  vpc_zone_identifier  = module.vpc.private_subnets
 }
