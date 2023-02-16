@@ -84,7 +84,7 @@ resource "aws_instance" "standalone_server" {
   root_block_device {
     volume_size = 20
   }
-  security_groups = [aws_security_group.app_ssh_sg.id]
+  vpc_security_group_ids = [aws_security_group.app_ssh_sg.id]
 }
 
 #Create a load balancer target group
@@ -186,6 +186,7 @@ resource "aws_security_group" "app_instance_sg" {
 resource "aws_security_group" "app_ssh_sg" {
   name        = "${local.name}-standalone-sg"
   description = "Allow inbound SSH access for standalone host"
+  vpc_id      = module.vpc.vpc_id
   ingress {
     from_port   = 22
     to_port     = 22

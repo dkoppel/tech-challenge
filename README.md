@@ -34,3 +34,5 @@ https://github.com/terraform-aws-modules/terraform-aws-s3-bucket
 https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id
 https://registry.terraform.io/providers/hashicorp/aws/latest/docs
 https://registry.terraform.io/namespaces/terraform-aws-modules
+https://stackoverflow.com/questions/51496944/terraform-forces-new-ec2-resource-creation-on-plan-apply-regarding-existing-secu
+https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance.html#security_groups
