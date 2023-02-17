@@ -144,6 +144,9 @@ resource "aws_autoscaling_group" "app_asg" {
   desired_capacity     = 2
   launch_configuration = aws_launch_configuration.app_launch_config.name
   vpc_zone_identifier  = module.vpc.private_subnets
+  lifecycle {
+    ignore_changes = [load_balancers, target_group_arns]
+  }
 }
 
 #Create security groups
