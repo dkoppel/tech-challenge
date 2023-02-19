@@ -1,3 +1,11 @@
+provider "aws" {
+  region = local.region
+
+  default_tags {
+    tags = local.tags
+  }
+}
+
 # Initialize a VPC and subnets
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
@@ -5,7 +13,6 @@ module "vpc" {
 
   name               = local.name
   cidr               = "10.1.0.0/16"
-  tags               = local.tags
   enable_nat_gateway = true
 
   azs             = ["${local.region}a", "${local.region}b"]
@@ -28,8 +35,6 @@ module "s3-bucket" {
   version = "3.7.0"
 
   bucket = "${local.name}-bucket-${random_id.id.hex}"
-
-  tags = local.tags
 
   lifecycle_rule = [
     {
@@ -79,7 +84,7 @@ resource "aws_instance" "standalone_server" {
   subnet_id     = module.vpc.public_subnets[1]
   key_name      = "access-key" #IMPORTANT: this key needs to be generated manually and securely stored in order to access instance.  See README.md
 
-  tags = merge(local.tags, { Name = "${local.name}-standalone-rhel" })
+  tags = { Name = "${local.name}-standalone-rhel" }
 
   root_block_device {
     volume_size = 20
@@ -87,38 +92,23 @@ resource "aws_instance" "standalone_server" {
   vpc_security_group_ids = [aws_security_group.app_ssh_sg.id]
 }
 
-#Create a load balancer target group
-resource "aws_lb_target_group" "app_tg" {
-  name     = "${local.name}-alb"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = module.vpc.vpc_id
-  health_check {
-    matcher = "200,403" #apache default page returns 403 rather than 200.
+# Create a security group for the stand alone RHEL instaance
+resource "aws_security_group" "app_ssh_sg" {
+  name        = "${local.name}-standalone-sg"
+  description = "Allow inbound SSH access for standalone host"
+  vpc_id      = module.vpc.vpc_id
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-}
-
-#Create an Elastic Load Balancer, listener, and attachment
-resource "aws_lb" "app_alb" {
-  name               = "${local.name}-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.app_lb_sg.id]
-  subnets            = module.vpc.public_subnets
-}
-resource "aws_lb_listener" "app_listener" {
-  load_balancer_arn = aws_lb.app_alb.arn
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.app_tg.arn
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
-}
-resource "aws_autoscaling_attachment" "app_attachment" {
-  autoscaling_group_name = aws_autoscaling_group.app_asg.name
-  lb_target_group_arn    = aws_lb_target_group.app_tg.arn
 }
 
 #Create an EC2 Launch configuration
@@ -135,39 +125,7 @@ resource "aws_launch_configuration" "app_launch_config" {
     volume_size = 20
   }
 }
-
-#Create an auto-scaling group
-resource "aws_autoscaling_group" "app_asg" {
-  name                 = "${local.name}-asg"
-  min_size             = 2
-  max_size             = 6
-  desired_capacity     = 2
-  launch_configuration = aws_launch_configuration.app_launch_config.name
-  vpc_zone_identifier  = module.vpc.private_subnets
-  lifecycle {
-    ignore_changes = [load_balancers, target_group_arns]
-  }
-}
-
-#Create security groups
-resource "aws_security_group" "app_lb_sg" {
-  name        = "${local.name}-lb-sg"
-  description = "Allow all inbound HTTP traffic to LB"
-  vpc_id      = module.vpc.vpc_id
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
+#Create a security group for ASG instances
 resource "aws_security_group" "app_instance_sg" {
   name        = "${local.name}-instance-sg"
   description = "Allow LB traffic to app instances"
@@ -186,13 +144,48 @@ resource "aws_security_group" "app_instance_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-resource "aws_security_group" "app_ssh_sg" {
-  name        = "${local.name}-standalone-sg"
-  description = "Allow inbound SSH access for standalone host"
+
+#Create an auto-scaling group
+resource "aws_autoscaling_group" "app_asg" {
+  name                 = "${local.name}-asg"
+  min_size             = 2
+  max_size             = 6
+  desired_capacity     = 2
+  launch_configuration = aws_launch_configuration.app_launch_config.name
+  vpc_zone_identifier  = module.vpc.private_subnets
+  lifecycle {
+    ignore_changes = [load_balancers, target_group_arns]
+  }
+}
+
+#Create a load balancer target group
+resource "aws_lb_target_group" "app_tg" {
+  name     = "${local.name}-alb"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = module.vpc.vpc_id
+  health_check {
+    matcher = "200,403" #apache default page returns 403 rather than 200.
+  }
+}
+
+#Create an Elastic Load Balancer
+resource "aws_lb" "app_alb" {
+  name               = "${local.name}-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.app_lb_sg.id]
+  subnets            = module.vpc.public_subnets
+}
+
+#Create load balancer security group
+resource "aws_security_group" "app_lb_sg" {
+  name        = "${local.name}-lb-sg"
+  description = "Allow all inbound HTTP traffic to LB"
   vpc_id      = module.vpc.vpc_id
   ingress {
-    from_port   = 22
-    to_port     = 22
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -203,4 +196,22 @@ resource "aws_security_group" "app_ssh_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+#Create an ELB listener
+resource "aws_lb_listener" "app_listener" {
+  load_balancer_arn = aws_lb.app_alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.app_tg.arn
+  }
+}
+
+# Attach group instances to ALB target group
+resource "aws_autoscaling_attachment" "app_attachment" {
+  autoscaling_group_name = aws_autoscaling_group.app_asg.name
+  lb_target_group_arn    = aws_lb_target_group.app_tg.arn
 }

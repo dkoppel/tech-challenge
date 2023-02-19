@@ -36,3 +36,5 @@ $ terraform apply
 * https://registry.terraform.io/namespaces/terraform-aws-modules
 * https://stackoverflow.com/questions/51496944/terraform-forces-new-ec2-resource-creation-on-plan-apply-regarding-existing-secu
 * https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance.html#security_groups
+* https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_attachment
+* https://www.hashicorp.com/blog/default-tags-in-the-terraform-aws-provider
