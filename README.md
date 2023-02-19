@@ -13,7 +13,11 @@ The purpose of this technical challenge is to demonstrate a working knowledge of
 In addition to a local copy of this repository, you must have a working local install of AWS CLI, Terraform CLI (1.2.0+) and an AWS account with IAM access allowing creation of resources.  AWS_ACCESS_KEY_ID environment variable must be set with a working AWS CLI key.  For more information about establishing an active session and access key, see https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html
 
 You will need access to create resources in US-East-1.
-In order to access instances, you will need to pre-generate an RSA keypair called "access-key" in us-east-1 and save it locally.
+
+In order to access instances, you will need to pre-generate an RSA keypair called "access-key":
+```
+$ aws ec2 create-key-pair --key-name access-key --key-type rsa --query "KeyMaterial" --output text > access-key.pem
+```
 
 ## Usage ##
 
@@ -38,3 +42,4 @@ $ terraform apply
 * https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance.html#security_groups
 * https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_attachment
 * https://www.hashicorp.com/blog/default-tags-in-the-terraform-aws-provider
+* https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template
