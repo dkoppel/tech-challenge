@@ -1,3 +1,11 @@
+provider "aws" {
+  region = local.region
+
+  default_tags {
+    tags = local.tags
+  }
+}
+
 # Initialize a VPC and subnets
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
@@ -5,7 +13,6 @@ module "vpc" {
 
   name               = local.name
   cidr               = "10.1.0.0/16"
-  tags               = local.tags
   enable_nat_gateway = true
 
   azs             = ["${local.region}a", "${local.region}b"]
@@ -28,8 +35,6 @@ module "s3-bucket" {
   version = "3.7.0"
 
   bucket = "${local.name}-bucket-${random_id.id.hex}"
-
-  tags = local.tags
 
   lifecycle_rule = [
     {
@@ -79,7 +84,7 @@ resource "aws_instance" "standalone_server" {
   subnet_id     = module.vpc.public_subnets[1]
   key_name      = "access-key" #IMPORTANT: this key needs to be generated manually and securely stored in order to access instance.  See README.md
 
-  tags = merge(local.tags, { Name = "${local.name}-standalone-rhel" })
+  tags = { Name = "${local.name}-standalone-rhel" }
 
   root_block_device {
     volume_size = 20
@@ -147,6 +152,7 @@ resource "aws_autoscaling_group" "app_asg" {
   lifecycle {
     ignore_changes = [load_balancers, target_group_arns]
   }
+  tags = merge(local.tags, { Name = "${local.name}-asg" })
 }
 
 #Create security groups
