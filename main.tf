@@ -116,14 +116,16 @@ resource "aws_launch_template" "app_launch_template" {
   name_prefix            = "${local.name}-app-"
   image_id               = local.ami
   instance_type          = "t2.micro"
-  user_data              = file("user-data.sh")
+  user_data              = filebase64("user-data.sh")
   vpc_security_group_ids = [aws_security_group.app_instance_sg.id]
   lifecycle {
     create_before_destroy = true
   }
   block_device_mappings {
+    device_name = "/dev/sda1"
     ebs {
-      volume_size = 20
+      volume_size           = 20
+      delete_on_termination = true
     }
   }
 }
@@ -156,6 +158,7 @@ resource "aws_autoscaling_group" "app_asg" {
   desired_capacity = 2
   launch_template {
     id = aws_launch_template.app_launch_template.id
+    version = "$Latest"
   }
   vpc_zone_identifier = module.vpc.private_subnets
   lifecycle {
