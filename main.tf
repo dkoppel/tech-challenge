@@ -111,20 +111,25 @@ resource "aws_security_group" "app_ssh_sg" {
   }
 }
 
-#Create an EC2 Launch configuration
-resource "aws_launch_configuration" "app_launch_config" {
-  name_prefix     = "${local.name}-app-"
-  image_id        = local.ami
-  instance_type   = "t2.micro"
-  user_data       = file("user-data.sh")
-  security_groups = [aws_security_group.app_instance_sg.id]
+#Create an EC2 Launch template
+resource "aws_launch_template" "app_launch_template" {
+  name_prefix            = "${local.name}-app-"
+  image_id               = local.ami
+  instance_type          = "t2.micro"
+  user_data              = filebase64("user-data.sh")
+  vpc_security_group_ids = [aws_security_group.app_instance_sg.id]
   lifecycle {
     create_before_destroy = true
   }
-  root_block_device {
-    volume_size = 20
+  block_device_mappings {
+    device_name = "/dev/sda1"
+    ebs {
+      volume_size           = 20
+      delete_on_termination = true
+    }
   }
 }
+
 #Create a security group for ASG instances
 resource "aws_security_group" "app_instance_sg" {
   name        = "${local.name}-instance-sg"
@@ -147,12 +152,15 @@ resource "aws_security_group" "app_instance_sg" {
 
 #Create an auto-scaling group
 resource "aws_autoscaling_group" "app_asg" {
-  name                 = "${local.name}-asg"
-  min_size             = 2
-  max_size             = 6
-  desired_capacity     = 2
-  launch_configuration = aws_launch_configuration.app_launch_config.name
-  vpc_zone_identifier  = module.vpc.private_subnets
+  name             = "${local.name}-asg"
+  min_size         = 2
+  max_size         = 6
+  desired_capacity = 2
+  launch_template {
+    id = aws_launch_template.app_launch_template.id
+    version = "$Latest"
+  }
+  vpc_zone_identifier = module.vpc.private_subnets
   lifecycle {
     ignore_changes = [load_balancers, target_group_arns]
   }
